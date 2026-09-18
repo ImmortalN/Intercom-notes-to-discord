@@ -71,46 +71,24 @@ app.post('/webhook', async (req, res) => {
     }
 
     // Собираем полезную информацию
-    const adminName = lastPart.author?.name || 'Unknown agent';
-    const conversationId = conversation.id;
-    const conversationUrl = `https://app.intercom.com/a/apps/${payload.app_id}/inbox/conversation/${conversationId}`;
-    
-    // Контакт
-    const contact = conversation.contacts?.contacts?.[0];
-    const contactName = contact?.name || contact?.email || 'Unknown customer';
-    const contactEmail = contact?.email || '—';
+const adminName = lastPart.author?.name || 'Unknown agent';
+const conversationId = conversation.id;
+const conversationUrl = `https://app.intercom.com/a/apps/${payload.app_id}/inbox/conversation/${conversationId}`;
 
-    // Формируем красивое сообщение в Discord
-    const discordMessage = {
-      embeds: [{
-        title: '🚀 New Feature Request',
-        color: 0x5865F2,
-        fields: [
-          {
-            name: 'Агент',
-            value: adminName,
-            inline: true
-          },
-          {
-            name: 'Клиент',
-            value: `${contactName}\n${contactEmail}`,
-            inline: true
-          },
-          {
-            name: 'Текст запроса',
-            value: cleanNote.length > 1000 ? cleanNote.slice(0, 1000) + '...' : cleanNote
-          },
-          {
-            name: 'Ссылка на разговор',
-            value: `[Открыть в Intercom](${conversationUrl})`
-          }
-        ],
-        timestamp: new Date().toISOString(),
-        footer: {
-          text: 'Intercom → Discord'
-        }
-      }]
-    };
+// Контакт (оставляем на всякий случай, но не используем)
+const contact = conversation.contacts?.contacts?.[0];
+const contactName = contact?.name || contact?.email || 'Unknown customer';
+const contactEmail = contact?.email || '—';
+
+// Формируем сообщение в Discord (чистый вариант)
+const discordMessage = {
+  embeds: [{
+    title: '🚀 New Feature Request',
+    color: 0x5865F2,
+    description: `**Агент:** ${adminName}\n\n${cleanNote}\n\n${conversationUrl}`,
+    timestamp: new Date().toISOString()
+  }]
+};
 
     // Отправляем в Discord
     const response = await fetch(DISCORD_WEBHOOK_URL, {
